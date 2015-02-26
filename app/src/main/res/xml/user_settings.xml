@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <PreferenceCategory android:title="Settings" >
+        <EditTextPreference
+            android:title="URL"
+            android:summary="Set the URL to check."
+            android:id="@+id/editURL"
+            android:key="prefURL"/>
+        <EditTextPreference
+            android:title="Frequency"
+            android:summary="How often should I check?"
+            android:inputType="number"
+            android:ems="10"
+            android:id="@+id/editFrequency"
+            android:key="prefFrequency"/>
+    </PreferenceCategory>
+
+</PreferenceScreen>
