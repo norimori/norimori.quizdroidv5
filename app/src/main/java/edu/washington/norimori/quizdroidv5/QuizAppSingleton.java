@@ -1,5 +1,15 @@
 package edu.washington.norimori.quizdroidv5;
 
+import android.content.Context;
+import android.content.res.AssetManager;
+import android.util.Log;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -70,71 +80,49 @@ public class QuizAppSingleton implements TopicRepository {
         }
     }
 
-    //Hardcoding all data for MainActivity's list: public String[] topics = {"Math", "Physics", "Marvel Super Heroes", "Pokemon"};
-    //Returns list of all topics.
-    public List<Topic> getEverything() {
-        allTopics = new ArrayList<Topic>();
+    public static String AssetJSONFile (String filename, Context context) throws IOException {
+        AssetManager manager = context.getAssets();
+        InputStream file = manager.open("defaultquizdata.json");
+        byte[] formArray = new byte[file.available()];
+        file.read(formArray);
+        file.close();
 
-        //Create all Topics and Question objects
-        Quiz pokemonQ1 = new Quiz("What type is Pikachu?", "Electric", "Psychic", "Water", "Fire", 1 );
-        Quiz pokemonQ2 = new Quiz("What type is Jigglypuff?", "Steel", "Normal", "Water", "Bug", 2 );
-        Quiz pokemonQ3 = new Quiz("What type is Glaceon?", "Leaf", "Dark", "Ghost", "Ice", 4 );
-        List<Quiz> pokemonQuizzes = new ArrayList<Quiz>();
-        pokemonQuizzes.add(pokemonQ1);
-        pokemonQuizzes.add(pokemonQ2);
-        pokemonQuizzes.add(pokemonQ3);
-        Topic pokemon = new Topic("Pokemon", "Gotta catch'em all!", "Pokémon (Pokemon is a media franchise owned by The Pokémon Company, and created by Satoshi Tajiri in 1995. It is centered on fictional creatures called \"Pokémon\", which humans capture and train to fight each other for sport.",
-                pokemonQuizzes, 3);
-        allTopics.add(pokemon);
+        Log.d("QuizAppSingleton", new String(formArray));
 
-        Quiz mathQ1 = new Quiz("1 + 1 = ?", "5", "1", "3", "2", 4);
-        Quiz mathQ2 = new Quiz("9000 x 0 = ?", "0", "1", "9000", "90000", 1);
-        Quiz mathQ3 = new Quiz("5 + 5 = ?", "0", "55", "10", "-10", 3);
-        Quiz mathQ4 = new Quiz("10 - 7 = ?", "-3", "107", "3", "17", 3);
-        Quiz mathQ5 = new Quiz("7 + 5", "21", "12", "75", "-57", 2);
-        List<Quiz> mathQuizzes = new ArrayList<Quiz>();
-        mathQuizzes.add(mathQ1);
-        mathQuizzes.add(mathQ2);
-        mathQuizzes.add(mathQ3);
-        mathQuizzes.add(mathQ4);
-        mathQuizzes.add(mathQ5);
-        Topic math = new Topic("Math", "MAAAAAAAATH", "MAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATH",
-                mathQuizzes, 5);
-        allTopics.add(math);
-
-        Quiz physicsQ1 = new Quiz("What famous dude had an apple fall on his head?", "Charmander", "Mikasa", "Jeffery", "Isaac Newton", 4);
-        Quiz physicsQ2 = new Quiz("When was Albert Einsten Born?", "March 14th, 1879", "Today", "Christmas", "Next year", 1);
-        Quiz physicsQ3 = new Quiz("How much is gravity on Earth?", "FALSE", "NO", "9.807m/s^2", "yes", 3);
-        Quiz physicsQ4 = new Quiz("How do you calculate speed?", "atmosphereic pressure/weight", "density/volume", "distance/time", "your enthusiasm!", 3);
-        Quiz physicsQ5 = new Quiz("What is the density of water?", "PIE", "999.97 kg/m^3", "-5", "0", 2);
-        Quiz physicsQ6 = new Quiz("What is the boiling point of water?", "-50F", "100C", "infinty", "never", 2);
-        List<Quiz> physicsQuizzes = new ArrayList<Quiz>();
-        physicsQuizzes.add(physicsQ1);
-        physicsQuizzes.add(physicsQ2);
-        physicsQuizzes.add(physicsQ3);
-        physicsQuizzes.add(physicsQ4);
-        physicsQuizzes.add(physicsQ5);
-        physicsQuizzes.add(physicsQ6);
-        Topic physics = new Topic("Physics", "IT'S EVERYWHERE ∩(ﾟ∀ﾟ∩)", "The effort to formulate phenomena mathematically in the hope of extending one's range of mastery over them.",
-                physicsQuizzes, 6);
-        allTopics.add(physics);
-
-        Quiz marvelSuperHeroesQ1 = new Quiz("Who is the strongest Marvel super hero", "Archer", "Ironman", "Hulk", "Spiderman", 3);
-        Quiz marvelSuperHeroesQ2 = new Quiz("Who was not in the X-Men originally?", "Wolverine", "Professor X", "Iceman", "Beast", 1);
-        Quiz marvelSuperHeroesQ3 = new Quiz("What is Professor X's full name?", "Pikachu", "The Prince", "Charles Francis Xavier", "Billy Bob Joe", 3);
-        Quiz marvelSuperHeroesQ4 = new Quiz("What is Iceman's real name?", "Spongebob", "Patrick", "Robert Louis Drake", "Jim", 3);
-        Quiz marvelSuperHeroesQ5 = new Quiz("What is the color of Beast's fur?", "rainbow", "blue", "orange", "pink", 2);
-        List<Quiz> marvelSuperHeroesQuizzes = new ArrayList<Quiz>();
-        marvelSuperHeroesQuizzes.add(marvelSuperHeroesQ1);
-        marvelSuperHeroesQuizzes.add(marvelSuperHeroesQ2);
-        marvelSuperHeroesQuizzes.add(marvelSuperHeroesQ3);
-        marvelSuperHeroesQuizzes.add(marvelSuperHeroesQ4);
-        marvelSuperHeroesQuizzes.add(marvelSuperHeroesQ5);
-        Topic marvelSuperHeroes = new Topic("Marvel Super Heroes", "POW POOOOOWWWWWWW", "POW POOOOWWWW BAM SMACK KABOOM HUMNA HUMNA HERP DERP CRASH ACHOO BARK MEOW WHACK QUACK",
-                marvelSuperHeroesQuizzes, 5);
-        allTopics.add(marvelSuperHeroes);
-
-        return allTopics;
+        return new String(formArray);
     }
 
+    //Returns list of all topics.
+    public List<Topic> getEverything(JSONArray data) {
+        allTopics = new ArrayList<Topic>();
+        for (int i = 0; i < data.length(); i++) { //Looping through topics
+            JSONObject topic = null;
+            try {
+                topic = data.getJSONObject(i);
+                String title = topic.getString("title");
+                String desc = topic.getString("desc");
+                //Create collection of Topics
+                List<Quiz> Questions = new ArrayList<Quiz>(); //Store all questions per topic
+                JSONArray questions = topic.getJSONArray("questions");
+                for (int j = 0; j < questions.length(); j++) {
+                    JSONObject question = questions.getJSONObject(j);
+                    String text = question.getString("text");
+                    int answerIndex = Integer.parseInt(question.getString("answer"));
+                    Quiz q = new Quiz(answerIndex);
+                    JSONArray answers = question.getJSONArray("answers");
+                    q.setA1(answers.getString(0));
+                    q.setA2(answers.getString(1));
+                    q.setA3(answers.getString(2));
+                    q.setA4(answers.getString(3));
+                    q.setqText(text);
+                    Questions.add(q);
+                }
+                Topic t = new Topic(title, desc, desc, Questions, questions.length());
+                allTopics.add(t);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        return allTopics;
+    }
 }

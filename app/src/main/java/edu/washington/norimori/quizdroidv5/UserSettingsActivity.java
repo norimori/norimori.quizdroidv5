@@ -3,6 +3,7 @@ package edu.washington.norimori.quizdroidv5;
 
 import android.app.AlarmManager;
 import android.app.AlertDialog;
+import android.app.DownloadManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -36,31 +37,39 @@ public class UserSettingsActivity extends PreferenceActivity implements SharedPr
     private String freqText;
     private Boolean alarmUp;
 
+    private long enqueue;
+    private DownloadManager downloadManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.user_settings);
 
+        //Initialize alarm intent and grab Preferences data
         alarmIntent = new Intent(UserSettingsActivity.this, AlarmReceiver.class);
         PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(this);
         sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 
+        //Check if download? is already in progress
         alarmUp = (PendingIntent.getBroadcast(UserSettingsActivity.this, 0, alarmIntent, PendingIntent.FLAG_NO_CREATE) != null);
         if(alarmUp) {
-            Log.d("yay", "Alarm Already Exists. Now Stopping.");
+            Log.d("Quizdroid", "Alarm Already Exists. Now Stopping.");
             alarmStop();
         }
 
         URLText = sharedPrefs.getString("prefURL", "NOURL");
         freqText = sharedPrefs.getString("prefFrequency", "NOFREQ");
-        Log.d("yay", "Initial grab for URL & freqText:  " + URLText + " | " + freqText);
+        Log.d("Quizdroid", "Initial grab for URL & freqText:  " + URLText + " | " + freqText);
 
+        //Display airplane mode or network access messages
         airplaneModeMessage();
         networkMessage();
 
         //Start download only if values are present for URL and Frequency.
-        if (URLText.isEmpty() || freqText.isEmpty() || URLText.equals("NOURL") || freqText.equals("NOFREQ")) {
-            Log.d("yay", "URL and Frequency are not given.");
+        if (URLText.isEmpty() || freqText.isEmpty() || URLText.equals("NOURL") || freqText.equals("NOFREQ") ||
+                !URLText.startsWith("http") || !URLText.startsWith("HTTP") ||
+                !URLText.startsWith("https") || !URLText.startsWith("HTTPS")) {
+            Log.d("Quizdroid", "Invalid URL or Frequency is not given.");
         } else {
             alarmStart();
         }
@@ -69,8 +78,8 @@ public class UserSettingsActivity extends PreferenceActivity implements SharedPr
     //Start alarm when changes have been made to preferences
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPrefs, String key) {
-        Log.d("yay", "onSharedPreferenceChanged: " + URLText);
-        Log.d("yay", "onSharedPreferenceChanged: " + freqText);
+        Log.d("Quizdroid", "onSharedPreferenceChanged URLText: " + URLText);
+        Log.d("Quizdroid", "onSharedPreferenceChanged freqText: " + freqText);
         if(alarmUp) {
             alarmStop();
         }
@@ -80,11 +89,11 @@ public class UserSettingsActivity extends PreferenceActivity implements SharedPr
     public void alarmStart() {
         alarmIntent.putExtra("URL", URLText);
         pendingIntent = PendingIntent.getBroadcast(UserSettingsActivity.this, 0, alarmIntent, PendingIntent.FLAG_CANCEL_CURRENT);
-        Log.d("yay", "In alarmStart(), URL is " + URLText + " and Frequency is " + freqText);
+        Log.d("Quizdroid", "In alarmStart(), URL is " + URLText + " and Frequency is " + freqText);
         long interval = TimeUnit.MINUTES.toMillis(Long.valueOf(freqText));
         AlarmManager manager = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
         manager.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), interval, pendingIntent);
-        Log.d("yay", "Alarm Started!");
+        Log.d("Quizdroid", "Alarm Started!");
     }
 
     //Stop alarm
@@ -94,7 +103,7 @@ public class UserSettingsActivity extends PreferenceActivity implements SharedPr
         AlarmManager manager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         manager.cancel(pendingIntent);
         pendingIntent.cancel();
-        Log.d("yay", "Alarm Cancelled...");
+        Log.d("Quizdroid", "Alarm Cancelled...");
     }
 
     @Override
@@ -145,7 +154,7 @@ public class UserSettingsActivity extends PreferenceActivity implements SharedPr
                     .setIcon(android.R.drawable.ic_dialog_alert)
                     .show();
         } else {
-            Log.d("yay", "Airplane Mode is Off. It's all good");
+            Log.d("Quizdroid", "Airplane Mode is Off. It's all good");
         }
     }
 
@@ -156,9 +165,9 @@ public class UserSettingsActivity extends PreferenceActivity implements SharedPr
         NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
         boolean networkAvailable = activeNetworkInfo != null && activeNetworkInfo.isConnected();
         if (networkAvailable) {
-            Log.d("yay", "Signal is available");
+            Log.d("Quizdroid", "Signal is available");
         } else {
-            Log.d("yay", "Signal is not available");
+            Log.d("Quizdroid", "Signal is not available");
             new AlertDialog.Builder(this)
             .setTitle("Signal Availability")
             .setMessage("No access to internet. Signal is not available. Leaving Application.")
@@ -170,6 +179,20 @@ public class UserSettingsActivity extends PreferenceActivity implements SharedPr
             .setIcon(android.R.drawable.ic_dialog_alert)
             .show();
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Set up a listener whenever a key changes
+        getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        // Set up a listener whenever a key changes
+        getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
     }
 
 }

@@ -54,9 +54,6 @@ public class ActionActivity extends BaseActivity {
         //Retrieve chosen topic name
         Intent launchedMe = getIntent();
         chosenTopicName = launchedMe.getStringExtra("chosenTopic");
-
-        //Create all topics and their quizzes since they're hard coded.
-        allTopics = QuizAppSingleton.getInstance().getEverything();
     }
 
     //Adjust visiblity of "Submit" button when radio button is selected

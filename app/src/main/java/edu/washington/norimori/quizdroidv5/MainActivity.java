@@ -22,6 +22,12 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,35 +37,49 @@ import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends BaseActivity {
 
-    private List<Topic> everything = QuizAppSingleton.getInstance().getEverything();
-
     private Button btnStop;
     private PendingIntent pendingIntent;
+
+    private List<Map<String, String>> list; //ListView Quiz Title, Quiz Description
+    private List<Topic> allData; //All Topic objects with their respective Question objects
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
-        //Create list of topics with accompanying short description.
         ListView listView = (ListView) findViewById(R.id.listView);
-        List<Map<String, String>> list = new ArrayList<Map<String, String>>();
-        for (Topic topic : everything) {
-            Map<String, String> pair = new HashMap<String, String>(2);
-            pair.put("title", topic.getName());
-            pair.put("descShort", topic.getDescriptionShort());
-            list.add(pair);
+
+        //Load JSON file data, populate ListView, and create all Topic and Question objects for all quizzes.
+        JSONArray data = null;
+        try {
+            data = new JSONArray(loadJSONFromAsset());
+            allData = QuizAppSingleton.getInstance().getEverything(data);
+            //allData = new ArrayList<Topic>();
+            list = new ArrayList<Map<String, String>>();
+            for (int i = 0; i < data.length(); i++) { //Populate ListView
+                JSONObject topic = data.getJSONObject(i);
+                String title = topic.getString("title");
+                String desc = topic.getString("desc");
+                Map<String, String> pair = new HashMap<String, String>(2);
+                pair.put("title", title);
+                pair.put("descShort", desc);
+                list.add(pair);
+            }
+            SimpleAdapter adapter = new SimpleAdapter(this, list, android.R.layout.simple_expandable_list_item_2,
+                    new String[] {"title", "descShort"}, new int[] {android.R.id.text1, android.R.id.text2});
+            listView.setAdapter(adapter);
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
-        SimpleAdapter adapter = new SimpleAdapter(this, list, android.R.layout.simple_expandable_list_item_2,
-                new String[] {"title", "descShort"}, new int[] {android.R.id.text1, android.R.id.text2});
-        listView.setAdapter(adapter);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent nextActivity = new Intent(MainActivity.this, ActionActivity.class);
-                nextActivity.putExtra("chosenTopic", everything.get(position).getName());
+                nextActivity.putExtra("chosenTopic", allData.get(position).getName());
+                Log.d("MainActivity", allData.get(position).getDescriptionShort());
+                Log.d("MainActivity", allData.get(position).getDescriptionShort());
                 startActivity(nextActivity);
                 finish();
             }
@@ -75,6 +95,25 @@ public class MainActivity extends BaseActivity {
         });
     }
 
+    //Get JSON file from assets
+    public String loadJSONFromAsset() {
+        String json = null;
+        try {
+            InputStream is = getAssets().open("defaultquizdata.json");
+            int size = is.available();
+            byte[] buffer = new byte[size];
+            is.read(buffer);
+            is.close();
+            json = new String(buffer, "UTF-8");
+        } catch (IOException ex) {
+            Log.d("MainActivity", "Null JSON file");
+            ex.printStackTrace();
+            return null;
+        }
+        Log.d("MainActivity", "Loaded JSON file");
+        return json;
+    }
+
     //Stop alarm
     public void alarmStop() {
         Intent intent = new Intent(MainActivity.this, AlarmReceiver.class); //Recreate Intent
@@ -82,6 +121,6 @@ public class MainActivity extends BaseActivity {
         AlarmManager manager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         manager.cancel(pendingIntent);
         pendingIntent.cancel();
-        Log.d("yay", "Alarm Cancelled...");
+        Log.d("MainActivity", "Alarm Cancelled...");
     }
 }

@@ -13,6 +13,10 @@ public class Quiz {
     private String a4;
     private int correctA;
 
+    public Quiz(int correctA) {
+        this.correctA = correctA;
+    }
+
     public Quiz(String qText, String a1, String a2, String a3, String a4, int correctA) {
         this.qText = qText;
         this.a1 = a1;
