@@ -82,7 +82,7 @@ public class QuizAppSingleton implements TopicRepository {
 
     public static String AssetJSONFile (String filename, Context context) throws IOException {
         AssetManager manager = context.getAssets();
-        InputStream file = manager.open("defaultquizdata.json");
+        InputStream file = manager.open("quizdata.json");
         byte[] formArray = new byte[file.available()];
         file.read(formArray);
         file.close();

@@ -20,10 +20,15 @@ import android.telephony.PhoneStateListener;
 import android.telephony.SignalStrength;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.util.Patterns;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
 
@@ -66,9 +71,7 @@ public class UserSettingsActivity extends PreferenceActivity implements SharedPr
         networkMessage();
 
         //Start download only if values are present for URL and Frequency.
-        if (URLText.isEmpty() || freqText.isEmpty() || URLText.equals("NOURL") || freqText.equals("NOFREQ") ||
-                !URLText.startsWith("http") || !URLText.startsWith("HTTP") ||
-                !URLText.startsWith("https") || !URLText.startsWith("HTTPS")) {
+        if (URLText.isEmpty() || freqText.isEmpty() || URLText.equals("NOURL") || freqText.equals("NOFREQ") ||  !Patterns.WEB_URL.matcher(URLText).matches()) {
             Log.d("Quizdroid", "Invalid URL or Frequency is not given.");
         } else {
             alarmStart();
@@ -194,5 +197,24 @@ public class UserSettingsActivity extends PreferenceActivity implements SharedPr
         // Set up a listener whenever a key changes
         getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
     }
+/*
+    //Check if URL is valid
+    public boolean URLIsValid(String urlString) {
+        int responseCode;
+        try {
+            URL url = new URL(urlString);
+            HttpURLConnection urlConnection = (HttpURLConnection) url
+                    .openConnection();
+            responseCode = urlConnection.getResponseCode();
+            urlConnection.disconnect();
+            return responseCode != 200;
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+            return false;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }*/
 
 }

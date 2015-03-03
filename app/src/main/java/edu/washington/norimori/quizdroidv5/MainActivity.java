@@ -1,23 +1,13 @@
 package edu.washington.norimori.quizdroidv5;
 
 import android.app.AlarmManager;
-import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.os.Build;
-import android.preference.PreferenceManager;
-import android.provider.Settings;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
@@ -32,7 +22,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 
 public class MainActivity extends BaseActivity {
@@ -55,7 +44,6 @@ public class MainActivity extends BaseActivity {
         try {
             data = new JSONArray(loadJSONFromAsset());
             allData = QuizAppSingleton.getInstance().getEverything(data);
-            //allData = new ArrayList<Topic>();
             list = new ArrayList<Map<String, String>>();
             for (int i = 0; i < data.length(); i++) { //Populate ListView
                 JSONObject topic = data.getJSONObject(i);
@@ -99,7 +87,7 @@ public class MainActivity extends BaseActivity {
     public String loadJSONFromAsset() {
         String json = null;
         try {
-            InputStream is = getAssets().open("defaultquizdata.json");
+            InputStream is = getAssets().open("quizdata.json");
             int size = is.available();
             byte[] buffer = new byte[size];
             is.read(buffer);

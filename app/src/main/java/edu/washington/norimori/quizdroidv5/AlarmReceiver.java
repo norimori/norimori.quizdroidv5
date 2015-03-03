@@ -38,7 +38,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        String myHTTPUrl = intent.getStringExtra("URL");
+        String myHTTPUrl = "http://" + intent.getStringExtra("URL");
         Toast.makeText(context, "Checking: " + myHTTPUrl, Toast.LENGTH_SHORT).show();
         Log.d("AlarmReceiver", "@AlarmReceiver; Checked for update at: " + myHTTPUrl);
 
